@@ -83,7 +83,7 @@ endif
 
 set wildignore=*.swp,*.bak,*.pyc,*.class,.svn
 " 突出显示当前行等
-set cursorcolumn
+" set cursorcolumn
 set cursorline          " 突出显示当前行
 
 
@@ -93,8 +93,8 @@ set t_ti= t_te=
 
 
 "- 则点击光标不会换,用于复制
-set mouse-=a             " 鼠标暂不启用, 键盘党....
-" set mouse=a                 " Automatically enable mouse usage
+" set mouse-=a             " 鼠标暂不启用, 键盘党....
+set mouse=a                 " Automatically enable mouse usage
 " set mousehide               " Hide the mouse cursor while typing
 
 
@@ -274,10 +274,10 @@ endif
 " 主要按键重定义
 
 " 关闭方向键, 强迫自己用 hjkl
-map <Left> <Nop>
-map <Right> <Nop>
-map <Up> <Nop>
-map <Down> <Nop>
+" map <Left> <Nop>
+" map <Right> <Nop>
+" map <Up> <Nop>
+" map <Down> <Nop>
 
 "Treat long lines as break lines (useful when moving around in them)
 "se swap之后，同物理行上线直接跳
@@ -377,8 +377,8 @@ noremap <silent><leader>/ :nohls<CR>
 " :b1 :b2   :bf :bl
 nnoremap [b :bprevious<cr>
 nnoremap ]b :bnext<cr>
-noremap <left> :bp<CR>
-noremap <right> :bn<CR>
+" noremap <left> :bp<CR>
+" noremap <right> :bn<CR>
 
 
 " tab 操作
@@ -399,9 +399,10 @@ map <leader>td :tabclose<cr>
 map <leader>tm :tabm<cr>
 
 
-" 新建tab  Ctrl+t
-nnoremap <C-t>     :tabnew<CR>
-inoremap <C-t>     <Esc>:tabnew<CR>
+
+" 新建tab  Ctrl+t  Ctrl+a
+nnoremap <C-a>     :tabnew<CR>
+inoremap <C-a>     <Esc>:tabnew<CR>
 " TODO: 配置成功这里, 切换更方便, 两个键
 " nnoremap <C-S-tab> :tabprevious<CR>
 " nnoremap <C-tab>   :tabnext<CR>
@@ -584,14 +585,14 @@ if has("gui_running")
 endif
 
 " theme主题
-set background=dark
-colorscheme solarized
+"set background=dark
+" colorscheme solarized
 set t_Co=256
 
-" colorscheme molokai
-" let g:molokai_original = 1
-" let g:rehash256 = 1
-"colorscheme desert
+colorscheme molokai
+let g:molokai_original = 1
+let g:rehash256 = 1
+" colorscheme desert
 
 "设置标记一列的背景颜色和数字一行颜色一致
 hi! link SignColumn   LineNr
@@ -609,3 +610,82 @@ highlight clear SpellLocal
 highlight SpellLocal term=underline cterm=underline
 
 
+if has("cscope")
+  set csprg=/usr/bin/cscope
+  set csto=1
+  set cst
+  set nocsverb
+" add any database in current directory
+  if filereadable("cscope.out")
+     cs add cscope.out
+  endif
+  set csverb
+endif
+ "cscope keys" 
+ "                     :cs find {querytype} {name}
+ "             其中：
+ "                    {querytype} 即相对应于实际的cscope行接口数字，同时也相对应于nvi命令：
+ "                           0或者s   —— 查找这个C符号
+ "                           1或者g  —— 查找这个定义
+ "                           2或者d  —— 查找被这个函数调用的函数（们）
+ "                           3或者c  —— 查找调用这个函数的函数（们）
+ "                           4或者t   —— 查找这个字符串
+ "                           6或者e  —— 查找这个egrep匹配模式
+ "                           7或者f   —— 查找这个文件
+ "                           8或者i   —— 查找#include这个文件的文件（们）
+map <F11> :call Do_CsTag()<CR>
+"nmap <C-A>s :cs find s <C-R>=expand("<cword>")<CR><CR>:copen<CR>
+"nmap <C-A>g :cs find g <C-R>=expand("<cword>")<CR><CR>
+"nmap <C-A>c :cs find c <C-R>=expand("<cword>")<CR><CR>:copen<CR>
+"nmap <C-A>t :cs find t <C-R>=expand("<cword>")<CR><CR>:copen<CR>
+"nmap <C-A>e :cs find e <C-R>=expand("<cword>")<CR><CR>:copen<CR>
+"nmap <C-A>f :cs find f <C-R>=expand("<cfile>")<CR><CR>:copen<CR>
+"nmap <C-A>i :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>:copen<CR>
+"nmap <C-A>d :cs find d <C-R>=expand("<cword>")<CR><CR>:copen<CR>
+nmap <leader>s :cs find s <C-R>=expand("<cword>")<cr><cr>
+nmap <leader>g :cs find g <C-R>=expand("<cword>")<cr><cr>
+nmap <leader>c :cs find c <C-R>=expand("<cword>")<cr><cr>
+nmap <leader>t :cs find t <C-R>=expand("<cword>")<cr><cr>
+nmap <leader>e :cs find e <C-R>=expand("<cword>")<cr><cr>
+nmap <leader>f :cs find f <C-R>=expand("<cfile>")<cr><cr>
+nmap <leader>i :cs find i <C-R>=expand("<cfile>")<cr><cr>
+nmap <leader>d :cs find d <C-R>=expand("<cword>")<cr><cr>
+function Do_CsTag()
+    let dir = getcwd()
+    if filereadable("tags")
+        let tagsdeleted=delete("./"."tags")
+        if(tagsdeleted!=0)
+            echohl WarningMsg | echo "Fail to do tags! I cannot delete the tags" | echohl None
+            return
+        endif
+    endif
+    if has("cscope")
+        silent! execute "cs kill -1"
+    endif
+    if filereadable("cscope.files")
+        let csfilesdeleted=delete("./"."cscope.files")
+        if(csfilesdeleted!=0)
+            echohl WarningMsg | echo "Fail to do cscope! I cannot delete the cscope.files" | echohl None
+            return
+        endif
+    endif
+    if filereadable("cscope.out")
+        let csoutdeleted=delete("./"."cscope.out")
+        if(csoutdeleted!=0)
+            echohl WarningMsg | echo "Fail to do cscope! I cannot delete the cscope.out" | echohl None
+            return
+        endif
+    endif
+    if(executable('ctags'))
+        silent! execute "!ctags -R --c-types=+p --fields=+S *"
+        silent! execute "!ctags -R --c++-kinds=+p --fields=+iaS --extra=+q ."
+    endif
+    if(executable('cscope') && has("cscope") )
+        silent! execute "!find . -name '*.h' -o -name '*.c' -o -name '*.cpp' -o -name '*.java' -o -name '*.cs' > cscope.files"
+        silent! execute "!cscope -b"
+        execute "normal :"
+        if filereadable("cscope.out")
+            execute "cs add cscope.out"
+        endif
+    endif
+endfunction
